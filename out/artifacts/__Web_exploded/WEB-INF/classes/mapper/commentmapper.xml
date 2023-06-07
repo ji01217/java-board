@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org/DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.demo.repository.CommentMapper">
+    <select id="getTopComments" resultType="com.example.demo.dto.CommentDTO">
+        select *
+        from comment
+        where articleId = #{id}
+          and parentId is null
+          and deleted = false
+    </select>
+
+    <select id="getComments" resultType="com.example.demo.dto.CommentDTO">
+        with cte (id, articleId, parentId, content, writer, createdAt, deleted, path, level) as (select id,
+                                                                                                        articleId,
+                                                                                                        parentId,
+                                                                                                        content,
+                                                                                                        writer,
+                                                                                                        createdAt,
+                                                                                                        deleted,
+                                                                                                        convert(char, id) as path,
+                                                                                                        0                 as level
+                                                                                                 from comment
+                                                                                                 where parentId is null
+                                                                                                   and articleId = 1
+                                                                                                   and deleted = false
+
+                                                                                                 union all
+
+                                                                                                 select c.id,
+                                                                                                        c.articleId,
+                                                                                                        c.parentId,
+                                                                                                        c.content,
+                                                                                                        c.writer,
+                                                                                                        c.createdAt,
+                                                                                                        c.deleted,
+                                                                                                        concat(a.path, '-', c.id) as path,
+                                                                                                        a.level + 1               as level
+                                                                                                 from comment c
+                                                                                                          join cte a
+                                                                                                               on a.id = c.parentId
+                                                                                                 where c.deleted = false)
+        select *
+        from cte
+        order by path
+    </select>
+
+    <insert id="create" parameterType="com.example.demo.dto.CommentDTO" useGeneratedKeys="true" keyProperty="">
+        insert into comment (content, writer, articleId, createdAt, deleted, parentId)
+        values (#{content}, #{writer}, #{articleId}, NOW(), false, #{parentId})
+    </insert>
+
+    <update id="edit" parameterType="com.example.demo.dto.CommentDTO">
+        update comment
+        set content   = #{content},
+            createdAt = NOW()
+        where id = #{id}
+    </update>
+
+    <update id="delete">
+        update comment
+        set deleted = true
+        where id = #{id}
+    </update>
+</mapper>

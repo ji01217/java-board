@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org/DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.example.demo.repository.FileMapper">
+    <insert id="insertFile" parameterType="com.example.demo.dto.FileDTO">
+        insert into file (articleId, originalFileName, storedFileName, contentType, fileSize, deleted, createdAt)
+        values (#{articleId}, #{originalFileName}, #{storedFileName}, #{contentType}, #{fileSize}, false, NOW())
+    </insert>
+
+    <select id="getFileByArticleId" resultType="com.example.demo.dto.FileDTO">
+        select *
+        from file
+        where articleId = #{articleId}
+          and deleted = false
+    </select>
+
+    <select id="getFileByStoredFileName" resultType="com.example.demo.dto.FileDTO">
+        select *
+        from file
+        where storedFileName = #{storedFileName}
+          and deleted = false
+    </select>
+
+    <update id="editFile" parameterType="com.example.demo.dto.FileDTO">
+        update file
+        set deleted = #{deleted}
+        where id = #{id}
+    </update>
+</mapper>

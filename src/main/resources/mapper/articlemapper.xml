@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org/DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.example.demo.repository.ArticleMapper">
+    <insert id="create" parameterType="com.example.demo.dto.ArticleDTO" useGeneratedKeys="true" keyProperty="id">
+        insert into article (title, content, writer, createdAt, updatedAt, deleted, viewCnt)
+        values (#{title}, #{content}, #{writer}, NOW(), NOW(), false, 0)
+    </insert>
+
+    <select id="getArticleById" resultType="com.example.demo.dto.ArticleDTO">
+        select *
+        from article
+        where id = #{id}
+          and deleted = false
+    </select>
+
+    <update id="edit" parameterType="com.example.demo.dto.ArticleDTO">
+        update article
+        set title     = #{title},
+            content   = #{content},
+            updatedAt = NOW(),
+            viewCnt   = #{viewCnt},
+            deleted   = #{deleted}
+        where id = #{id}
+    </update>
+
+    <select id="getArticlesByPage" resultType="com.example.demo.dto.ArticleDTO">
+        select *
+        from article
+        where deleted = false
+        order by id DESC
+        limit #{offset}, 5
+    </select>
+
+    <select id="getTotalCount" resultType="int">
+        select count(*)
+        from article
+        where deleted = false
+    </select>
+
+    <select id="getArticlesBySearch" resultType="com.example.demo.dto.ArticleDTO">
+        select *
+        from article
+        where
+        <if test="option == '제목'">
+            title like concat('%', #{keyword}, '%')
+        </if>
+        <if test="option == '내용'">
+            regexp_replace(content, '&lt;[^>]+>', '') like concat('%', #{keyword}, '%')
+        </if>
+        <if test="option == '작성자'">
+            writer like concat('%', #{keyword}, '%')
+        </if>
+        and deleted = false
+        order by id DESC
+        limit #{offset}, 5
+    </select>
+
+    <select id="getArticlesBySearchAll" resultType="com.example.demo.dto.ArticleDTO">
+        select *
+        from article
+        where deleted = false
+          and (title like concat('%', #{keyword}, '%')
+            or regexp_replace(content, '&lt;[^>]+>', '') like concat('%', #{keyword}, '%')
+            or writer like concat('%', #{keyword}, '%'))
+        order by id DESC
+        limit #{offset}, 5
+    </select>
+</mapper>

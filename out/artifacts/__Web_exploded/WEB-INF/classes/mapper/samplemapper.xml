@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org/DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="sample">
+    <select id="getSample" resultType="java.util.HashMap" >
+        select  USER_NAME, RMK, INST_DATE
+        from sample
+    </select>
+
+    <insert id="add">
+        insert into sample (USER_NAME, RMK, INST_DATE)  values ( #{userName}, #{rmk}, getdate())
+    </insert>
+</mapper>
